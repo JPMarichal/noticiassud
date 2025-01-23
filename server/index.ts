@@ -2,9 +2,23 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+// Ensure environment variables are loaded
+if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME) {
+  throw new Error("Database configuration missing in environment variables");
+}
+
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error("OpenAI API key missing in environment variables");
+}
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Add production URL prefix for API routes in production
+if (process.env.NODE_ENV === 'production') {
+  app.use('/noticias/iglesia', express.static('dist/public'));
+}
 
 app.use((req, res, next) => {
   const start = Date.now();

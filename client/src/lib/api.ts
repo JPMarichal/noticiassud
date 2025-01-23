@@ -1,13 +1,15 @@
 import { FilterParams, News } from './types';
 
-const BASE_URL = '';
+const BASE_URL = process.env.NODE_ENV === 'production' 
+  ? '/noticias/iglesia'
+  : '';
 
 export async function fetchNews(filters: FilterParams): Promise<News[]> {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([key, value]) => {
     if (value) params.append(key, value);
   });
-  
+
   const response = await fetch(`${BASE_URL}/api/news?${params}`);
   if (!response.ok) throw new Error('Failed to fetch news');
   return response.json();
@@ -17,7 +19,7 @@ export async function fetchSummary(startDate?: string, endDate?: string): Promis
   const params = new URLSearchParams();
   if (startDate) params.append('startDate', startDate);
   if (endDate) params.append('endDate', endDate);
-  
+
   const response = await fetch(`${BASE_URL}/api/summary?${params}`);
   if (!response.ok) throw new Error('Failed to fetch summary');
   const data = await response.json();

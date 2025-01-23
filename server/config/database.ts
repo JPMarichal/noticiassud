@@ -1,8 +1,23 @@
 import pg from 'pg';
 import mysql from 'mysql2/promise';
-import { db as dbConfig } from '../config/database';
 
-const config = dbConfig.config;
+interface DatabaseConfig {
+  type: 'mysql' | 'postgresql';
+  host: string;
+  user: string;
+  password: string;
+  database: string;
+  port?: number;
+}
+
+const config: DatabaseConfig = {
+  type: (process.env.DB_TYPE || 'mysql') as 'mysql' | 'postgresql',
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'bibliaho_noticias',
+  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : undefined
+};
 
 class DatabaseConnection {
   private static mysqlPool: mysql.Pool;
@@ -52,5 +67,6 @@ class DatabaseConnection {
 }
 
 export const db = {
-  query: DatabaseConnection.query.bind(DatabaseConnection)
+  query: DatabaseConnection.query.bind(DatabaseConnection),
+  config
 };

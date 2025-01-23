@@ -90,14 +90,14 @@ export default function NewsFilters({ onFilterChange }: Props) {
   return (
     <div className="card shadow-sm mb-4">
       <div className="card-body">
-        <div className="row g-3">
-          <div className="col-md-6">
-            <label className="form-label fw-bold">
-              <i className="fas fa-calendar-alt me-2"></i>
+        <div className="row g-2">
+          <div className="col-12 col-md-6">
+            <label className="form-label small fw-bold">
+              <i className="fas fa-calendar-alt me-1"></i>
               Rangos Predefinidos
             </label>
             <select 
-              className="form-select form-select-lg"
+              className="form-select form-select-sm"
               onChange={(e) => handlePresetChange(e.target.value)}
             >
               <option value="">Seleccionar rango...</option>
@@ -111,39 +111,39 @@ export default function NewsFilters({ onFilterChange }: Props) {
             </select>
           </div>
 
-          <div className="col-md-3">
-            <label className="form-label fw-bold">
-              <i className="fas fa-calendar-day me-2"></i>
+          <div className="col-6 col-md-3">
+            <label className="form-label small fw-bold">
+              <i className="fas fa-calendar-day me-1"></i>
               Fecha Inicial
             </label>
             <input
               type="date"
-              className="form-control form-control-lg"
+              className="form-control form-control-sm"
               value={filters.startDate}
               onChange={(e) => handleFilterChange('startDate', e.target.value)}
             />
           </div>
 
-          <div className="col-md-3">
-            <label className="form-label fw-bold">
-              <i className="fas fa-calendar-check me-2"></i>
+          <div className="col-6 col-md-3">
+            <label className="form-label small fw-bold">
+              <i className="fas fa-calendar-check me-1"></i>
               Fecha Final
             </label>
             <input
               type="date"
-              className="form-control form-control-lg"
+              className="form-control form-control-sm"
               value={filters.endDate}
               onChange={(e) => handleFilterChange('endDate', e.target.value)}
             />
           </div>
 
-          <div className="col-md-4">
-            <label className="form-label fw-bold">
-              <i className="fas fa-newspaper me-2"></i>
+          <div className="col-12 col-md-4">
+            <label className="form-label small fw-bold">
+              <i className="fas fa-newspaper me-1"></i>
               Fuente
             </label>
             <select
-              className="form-select"
+              className="form-select form-select-sm"
               value={filters.source}
               onChange={(e) => handleFilterChange('source', e.target.value)}
             >
@@ -154,13 +154,13 @@ export default function NewsFilters({ onFilterChange }: Props) {
             </select>
           </div>
 
-          <div className="col-md-4">
-            <label className="form-label fw-bold">
-              <i className="fas fa-bookmark me-2"></i>
+          <div className="col-12 col-md-4">
+            <label className="form-label small fw-bold">
+              <i className="fas fa-bookmark me-1"></i>
               Sección
             </label>
             <select
-              className="form-select"
+              className="form-select form-select-sm"
               value={filters.section}
               onChange={(e) => handleFilterChange('section', e.target.value)}
             >
@@ -171,13 +171,13 @@ export default function NewsFilters({ onFilterChange }: Props) {
             </select>
           </div>
 
-          <div className="col-md-4">
-            <label className="form-label fw-bold">
-              <i className="fas fa-globe-americas me-2"></i>
+          <div className="col-12 col-md-4">
+            <label className="form-label small fw-bold">
+              <i className="fas fa-globe-americas me-1"></i>
               País
             </label>
             <select
-              className="form-select"
+              className="form-select form-select-sm"
               value={filters.country}
               onChange={(e) => handleFilterChange('country', e.target.value)}
             >
