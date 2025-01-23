@@ -1,5 +1,6 @@
 import { News } from '../lib/types';
 import defaultNewsImage from '../assets/default-news.svg';
+import { useState } from 'react';
 
 interface Props {
   news: News[];
@@ -7,6 +8,8 @@ interface Props {
 }
 
 export default function NewsGrid({ news, loading }: Props) {
+  const [copyFeedback, setCopyFeedback] = useState<number | null>(null);
+
   if (loading) {
     return (
       <div className="text-center py-5">
@@ -31,6 +34,35 @@ export default function NewsGrid({ news, loading }: Props) {
   const sortedNews = [...news].sort((a, b) => 
     new Date(b.fechaPublicacion).getTime() - new Date(a.fechaPublicacion).getTime()
   );
+
+  const handleShare = (url: string, type: string, newsId: number) => {
+    let shareUrl = '';
+    const encodedUrl = encodeURIComponent(url);
+    const encodedTitle = encodeURIComponent('¡Mira esta noticia interesante!');
+
+    switch (type) {
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+        break;
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`;
+        break;
+      case 'whatsapp':
+        shareUrl = `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`;
+        break;
+      case 'email':
+        shareUrl = `mailto:?subject=${encodedTitle}&body=${encodedUrl}`;
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(url).then(() => {
+          setCopyFeedback(newsId);
+          setTimeout(() => setCopyFeedback(null), 2000);
+        });
+        return;
+    }
+
+    window.open(shareUrl, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -95,7 +127,7 @@ export default function NewsGrid({ news, loading }: Props) {
               </div>
             </div>
             <div className="card-footer bg-transparent border-top-0">
-              <div className="d-flex justify-content-between align-items-center">
+              <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <small className="text-muted">
                   <i className="fas fa-calendar-alt me-1"></i>
                   {new Date(item.fechaPublicacion).toLocaleDateString('es', {
@@ -104,15 +136,56 @@ export default function NewsGrid({ news, loading }: Props) {
                     day: 'numeric'
                   })}
                 </small>
-                <a 
-                  href={item.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="btn btn-sm btn-outline-primary"
-                >
-                  <i className="fas fa-external-link-alt me-1"></i>
-                  Leer más
-                </a>
+                <div className="btn-group">
+                  <button 
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => handleShare(item.url, 'facebook', item.id)}
+                    title="Compartir en Facebook"
+                  >
+                    <i className="fab fa-facebook"></i>
+                  </button>
+                  <button 
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => handleShare(item.url, 'twitter', item.id)}
+                    title="Compartir en Twitter"
+                  >
+                    <i className="fab fa-twitter"></i>
+                  </button>
+                  <button 
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => handleShare(item.url, 'whatsapp', item.id)}
+                    title="Compartir en WhatsApp"
+                  >
+                    <i className="fab fa-whatsapp"></i>
+                  </button>
+                  <button 
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => handleShare(item.url, 'email', item.id)}
+                    title="Compartir por correo"
+                  >
+                    <i className="fas fa-envelope"></i>
+                  </button>
+                  <button 
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => handleShare(item.url, 'copy', item.id)}
+                    title="Copiar enlace"
+                  >
+                    {copyFeedback === item.id ? (
+                      <i className="fas fa-check"></i>
+                    ) : (
+                      <i className="fas fa-copy"></i>
+                    )}
+                  </button>
+                  <a 
+                    href={item.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="btn btn-sm btn-outline-primary"
+                  >
+                    <i className="fas fa-external-link-alt me-1"></i>
+                    Leer más
+                  </a>
+                </div>
               </div>
             </div>
           </div>
