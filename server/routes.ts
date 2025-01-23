@@ -100,11 +100,38 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Metadata endpoints
-  app.get("/api/sources", async (_req, res) => {
+  app.get("/api/languages", async (_req, res) => {
     try {
       const result = await db
+        .select({ idioma: news.idioma })
+        .from(news)
+        .where(sql`idioma IS NOT NULL`)
+        .groupBy(news.idioma)
+        .orderBy(news.idioma);
+
+      res.json(result.map(l => l.idioma));
+    } catch (error) {
+      console.error('Error in /api/languages:', error);
+      res.status(500).json({ 
+        error: "Error fetching languages",
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      });
+    }
+  });
+
+  app.get("/api/sources", async (req, res) => {
+    try {
+      const { language } = req.query;
+      let query = db
         .select({ fuente: news.fuente })
         .from(news)
+        .where(sql`fuente IS NOT NULL`);
+
+      if (language) {
+        query = query.where(eq(news.idioma, language as string));
+      }
+
+      const result = await query
         .groupBy(news.fuente)
         .orderBy(news.fuente);
 
@@ -118,12 +145,19 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.get("/api/sections", async (_req, res) => {
+  app.get("/api/sections", async (req, res) => {
     try {
-      const result = await db
+      const { source } = req.query;
+      let query = db
         .select({ seccion: news.seccion })
         .from(news)
-        .where(sql`seccion IS NOT NULL`)
+        .where(sql`seccion IS NOT NULL`);
+
+      if (source) {
+        query = query.where(eq(news.fuente, source as string));
+      }
+
+      const result = await query
         .groupBy(news.seccion)
         .orderBy(news.seccion);
 
@@ -151,25 +185,6 @@ export function registerRoutes(app: Express): Server {
       console.error('Error in /api/countries:', error);
       res.status(500).json({ 
         error: "Error fetching countries",
-        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
-      });
-    }
-  });
-
-  app.get("/api/languages", async (_req, res) => {
-    try {
-      const result = await db
-        .select({ idioma: news.idioma })
-        .from(news)
-        .where(sql`idioma IS NOT NULL`)
-        .groupBy(news.idioma)
-        .orderBy(news.idioma);
-
-      res.json(result.map(l => l.idioma));
-    } catch (error) {
-      console.error('Error in /api/languages:', error);
-      res.status(500).json({ 
-        error: "Error fetching languages",
         details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }

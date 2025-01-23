@@ -7,38 +7,80 @@ interface Props {
 }
 
 export default function NewsFilters({ onFilterChange }: Props) {
+  const [languages, setLanguages] = useState<string[]>([]);
   const [sources, setSources] = useState<string[]>([]);
   const [sections, setSections] = useState<string[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
-  const [languages, setLanguages] = useState<string[]>([]);
   const [filters, setFilters] = useState<FilterParams>({
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0],
     language: 'Español'
   });
 
+  // Load languages and countries on mount
   useEffect(() => {
-    const loadMetadata = async () => {
+    const loadInitialData = async () => {
       try {
-        const [sourcesData, sectionsData, countriesData, languagesData] = await Promise.all([
-          fetchSources(),
-          fetchSections(),
-          fetchCountries(),
-          fetchLanguages()
+        const [languagesData, countriesData] = await Promise.all([
+          fetchLanguages(),
+          fetchCountries()
         ]);
-        setSources(sourcesData);
-        setSections(sectionsData);
-        setCountries(countriesData);
         setLanguages(languagesData);
+        setCountries(countriesData);
       } catch (error) {
-        console.error('Error loading metadata:', error);
+        console.error('Error loading initial data:', error);
       }
     };
-    loadMetadata();
+    loadInitialData();
   }, []);
+
+  // Load sources when language changes
+  useEffect(() => {
+    const loadSources = async () => {
+      if (filters.language) {
+        try {
+          const sourcesData = await fetchSources(filters.language);
+          setSources(sourcesData);
+          // Clear source and section when language changes
+          if (filters.source) {
+            const newFilters = { ...filters, source: '', section: '' };
+            setFilters(newFilters);
+            onFilterChange(newFilters);
+          }
+        } catch (error) {
+          console.error('Error loading sources:', error);
+        }
+      }
+    };
+    loadSources();
+  }, [filters.language]);
+
+  // Load sections when source changes
+  useEffect(() => {
+    const loadSections = async () => {
+      if (filters.source) {
+        try {
+          const sectionsData = await fetchSections(filters.source);
+          setSections(sectionsData);
+        } catch (error) {
+          console.error('Error loading sections:', error);
+        }
+      } else {
+        setSections([]);
+      }
+    };
+    loadSections();
+  }, [filters.source]);
 
   const handleFilterChange = (key: keyof FilterParams, value: string) => {
     const newFilters = { ...filters, [key]: value };
+    // Clear dependent fields
+    if (key === 'language') {
+      newFilters.source = '';
+      newFilters.section = '';
+    } else if (key === 'source') {
+      newFilters.section = '';
+    }
     setFilters(newFilters);
     onFilterChange(newFilters);
   };
@@ -143,6 +185,23 @@ export default function NewsFilters({ onFilterChange }: Props) {
 
           <div className="col-12 col-md-3">
             <label className="form-label small fw-bold">
+              <i className="fas fa-language me-1"></i>
+              Idioma
+            </label>
+            <select
+              className="form-select form-select-sm"
+              value={filters.language}
+              onChange={(e) => handleFilterChange('language', e.target.value)}
+            >
+              <option value="">Todos los Idiomas</option>
+              {languages.map(language => (
+                <option key={language} value={language}>{language}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="col-12 col-md-3">
+            <label className="form-label small fw-bold">
               <i className="fas fa-newspaper me-1"></i>
               Fuente
             </label>
@@ -150,6 +209,7 @@ export default function NewsFilters({ onFilterChange }: Props) {
               className="form-select form-select-sm"
               value={filters.source}
               onChange={(e) => handleFilterChange('source', e.target.value)}
+              disabled={!filters.language}
             >
               <option value="">Todas las Fuentes</option>
               {sources.map(source => (
@@ -167,6 +227,7 @@ export default function NewsFilters({ onFilterChange }: Props) {
               className="form-select form-select-sm"
               value={filters.section}
               onChange={(e) => handleFilterChange('section', e.target.value)}
+              disabled={!filters.source}
             >
               <option value="">Todas las Secciones</option>
               {sections.map(section => (
@@ -188,23 +249,6 @@ export default function NewsFilters({ onFilterChange }: Props) {
               <option value="">Todos los Países</option>
               {countries.map(country => (
                 <option key={country} value={country}>{country}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="col-12 col-md-3">
-            <label className="form-label small fw-bold">
-              <i className="fas fa-language me-1"></i>
-              Idioma
-            </label>
-            <select
-              className="form-select form-select-sm"
-              value={filters.language}
-              onChange={(e) => handleFilterChange('language', e.target.value)}
-            >
-              <option value="">Todos los Idiomas</option>
-              {languages.map(language => (
-                <option key={language} value={language}>{language}</option>
               ))}
             </select>
           </div>
