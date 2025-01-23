@@ -5,38 +5,51 @@ import { Toaster } from "@/components/ui/toaster";
 import NewsPage from "./pages/NewsPage";
 import SummaryPage from "./pages/SummaryPage";
 import NotFound from "@/pages/not-found";
+import { useState } from "react";
 
 function App() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
         <div className="container">
-          <Link href="/" className="navbar-brand">
+          <Link href="/" className="navbar-brand" onClick={closeMenu}>
             <i className="fas fa-globe me-2"></i>
-            News Aggregator
+            Noticias de la Iglesia
           </Link>
-          
+
           <button 
             className="navbar-toggler" 
             type="button" 
-            data-bs-toggle="collapse" 
-            data-bs-target="#navbarNav"
+            onClick={toggleMenu}
+            aria-controls="navbarNav"
+            aria-expanded={isMenuOpen}
+            aria-label="Toggle navigation"
           >
             <span className="navbar-toggler-icon"></span>
           </button>
-          
-          <div className="collapse navbar-collapse" id="navbarNav">
+
+          <div className={`collapse navbar-collapse ${isMenuOpen ? 'show' : ''}`} id="navbarNav">
             <ul className="navbar-nav">
               <li className="nav-item">
-                <Link href="/" className="nav-link">
+                <Link href="/" className="nav-link" onClick={closeMenu}>
                   <i className="fas fa-newspaper me-1"></i>
-                  News
+                  Noticias de la Iglesia
                 </Link>
               </li>
               <li className="nav-item">
-                <Link href="/summary" className="nav-link">
+                <Link href="/summary" className="nav-link" onClick={closeMenu}>
                   <i className="fas fa-robot me-1"></i>
-                  AI Summary
+                  Resumen de noticias
                 </Link>
               </li>
             </ul>
