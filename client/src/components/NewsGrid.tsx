@@ -50,6 +50,9 @@ export default function NewsGrid({ news, loading }: Props) {
       case 'whatsapp':
         shareUrl = `https://api.whatsapp.com/send?text=${encodedTitle}%0A%0A${encodedUrl}`;
         break;
+      case 'gmail':
+        shareUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=&su=${encodedTitle}&body=${item.resumen ? encodedTitle + '%0A%0A' + encodeURIComponent(item.resumen) + '%0A%0A' + encodedUrl : encodedTitle + '%0A%0A' + encodedUrl}`;
+        break;
       case 'email':
         shareUrl = `mailto:?subject=${encodedTitle}&body=${item.resumen ? encodedTitle + '%0A%0A' + encodeURIComponent(item.resumen) + '%0A%0A' + encodedUrl : encodedTitle + '%0A%0A' + encodedUrl}`;
         break;
@@ -163,6 +166,13 @@ export default function NewsGrid({ news, loading }: Props) {
                     title="Compartir en WhatsApp"
                   >
                     <i className="fab fa-whatsapp"></i>
+                  </button>
+                  <button 
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => handleShare(item, 'gmail')}
+                    title="Compartir por Gmail"
+                  >
+                    <i className="fab fa-google"></i>
                   </button>
                   <button 
                     className="btn btn-sm btn-outline-secondary"
