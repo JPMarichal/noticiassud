@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import NewsPage from "./pages/NewsPage";
 import SummaryPage from "./pages/SummaryPage";
 import NotFound from "@/pages/not-found";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,6 +18,28 @@ function App() {
     setIsMenuOpen(false);
   };
 
+  // Effect to initialize Bootstrap collapse
+  useEffect(() => {
+    const navbarToggler = document.querySelector('.navbar-toggler');
+    const navbarCollapse = document.querySelector('.navbar-collapse');
+
+    if (navbarToggler && navbarCollapse) {
+      navbarToggler.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleMenu();
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        if (!navbarCollapse.contains(target) && !navbarToggler.contains(target)) {
+          setIsMenuOpen(false);
+        }
+      });
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -29,8 +51,7 @@ function App() {
 
           <button 
             className="navbar-toggler" 
-            type="button" 
-            onClick={toggleMenu}
+            type="button"
             aria-controls="navbarNav"
             aria-expanded={isMenuOpen}
             aria-label="Toggle navigation"
@@ -38,7 +59,10 @@ function App() {
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          <div className={`collapse navbar-collapse ${isMenuOpen ? 'show' : ''}`} id="navbarNav">
+          <div 
+            className={`navbar-collapse ${isMenuOpen ? 'show' : 'collapse'}`} 
+            id="navbarNav"
+          >
             <ul className="navbar-nav">
               <li className="nav-item">
                 <Link href="/" className="nav-link" onClick={closeMenu}>
