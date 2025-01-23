@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FilterParams } from '../lib/types';
-import { fetchSources, fetchSections, fetchCountries } from '../lib/api';
+import { fetchSources, fetchSections, fetchCountries, fetchLanguages } from '../lib/api';
 
 interface Props {
   onFilterChange: (filters: FilterParams) => void;
@@ -10,22 +10,26 @@ export default function NewsFilters({ onFilterChange }: Props) {
   const [sources, setSources] = useState<string[]>([]);
   const [sections, setSections] = useState<string[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
   const [filters, setFilters] = useState<FilterParams>({
     startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0]
+    endDate: new Date().toISOString().split('T')[0],
+    language: 'Español'
   });
 
   useEffect(() => {
     const loadMetadata = async () => {
       try {
-        const [sourcesData, sectionsData, countriesData] = await Promise.all([
+        const [sourcesData, sectionsData, countriesData, languagesData] = await Promise.all([
           fetchSources(),
           fetchSections(),
-          fetchCountries()
+          fetchCountries(),
+          fetchLanguages()
         ]);
         setSources(sourcesData);
         setSections(sectionsData);
         setCountries(countriesData);
+        setLanguages(languagesData);
       } catch (error) {
         console.error('Error loading metadata:', error);
       }
@@ -137,7 +141,7 @@ export default function NewsFilters({ onFilterChange }: Props) {
             />
           </div>
 
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <label className="form-label small fw-bold">
               <i className="fas fa-newspaper me-1"></i>
               Fuente
@@ -154,7 +158,7 @@ export default function NewsFilters({ onFilterChange }: Props) {
             </select>
           </div>
 
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <label className="form-label small fw-bold">
               <i className="fas fa-bookmark me-1"></i>
               Sección
@@ -171,7 +175,7 @@ export default function NewsFilters({ onFilterChange }: Props) {
             </select>
           </div>
 
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <label className="form-label small fw-bold">
               <i className="fas fa-globe-americas me-1"></i>
               País
@@ -184,6 +188,23 @@ export default function NewsFilters({ onFilterChange }: Props) {
               <option value="">Todos los Países</option>
               {countries.map(country => (
                 <option key={country} value={country}>{country}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="col-12 col-md-3">
+            <label className="form-label small fw-bold">
+              <i className="fas fa-language me-1"></i>
+              Idioma
+            </label>
+            <select
+              className="form-select form-select-sm"
+              value={filters.language}
+              onChange={(e) => handleFilterChange('language', e.target.value)}
+            >
+              <option value="">Todos los Idiomas</option>
+              {languages.map(language => (
+                <option key={language} value={language}>{language}</option>
               ))}
             </select>
           </div>

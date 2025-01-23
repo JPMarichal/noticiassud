@@ -43,3 +43,9 @@ export async function fetchCountries(): Promise<string[]> {
   if (!response.ok) throw new Error('Failed to fetch countries');
   return response.json();
 }
+
+export async function fetchLanguages(): Promise<string[]> {
+  const response = await fetch(`${BASE_URL}/api/languages`);
+  if (!response.ok) throw new Error('Failed to fetch languages');
+  return response.json();
+}

@@ -19,4 +19,5 @@ export interface FilterParams {
   source?: string;
   section?: string;
   country?: string;
+  language?: string;  // Nuevo campo para el filtro de idioma
 }

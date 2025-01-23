@@ -1,7 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { db } from "./lib/db";
+import { db } from "./config/database";
 import { generateNewsSummary } from "./lib/openai";
+import { desc, eq, and, or, sql } from "drizzle-orm";
+import { news } from "@db/schema";
 
 export function registerRoutes(app: Express): Server {
   // News retrieval endpoint
@@ -12,56 +14,47 @@ export function registerRoutes(app: Express): Server {
         endDate,
         source,
         section,
-        country
+        country,
+        language
       } = req.query;
 
       let conditions = [];
-      const params: any[] = [];
 
       if (startDate && endDate) {
-        conditions.push("fecha_publicacion BETWEEN ? AND ?");
-        params.push(startDate, endDate);
+        conditions.push(and(
+          sql`fecha_publicacion >= ${startDate}`,
+          sql`fecha_publicacion <= ${endDate}`
+        ));
       } else if (startDate) {
-        conditions.push("fecha_publicacion = ?");
-        params.push(startDate);
+        conditions.push(sql`fecha_publicacion = ${startDate}`);
       }
 
       if (source) {
-        conditions.push("fuente = ?");
-        params.push(source);
+        conditions.push(eq(news.fuente, source as string));
       }
 
       if (section) {
-        conditions.push("seccion = ?");
-        params.push(section);
+        conditions.push(eq(news.seccion, section as string));
       }
 
       if (country) {
-        conditions.push("pais = ?");
-        params.push(country);
+        conditions.push(eq(news.pais, country as string));
       }
 
-      const whereClause = conditions.length > 0 
-        ? `WHERE ${conditions.join(" AND ")}` 
-        : "";
+      if (language) {
+        conditions.push(eq(news.idioma, language as string));
+      }
 
-      const query = `
-        SELECT 
-          id, titulo, resumen, url, url_imagen, 
-          fecha_publicacion, tipo, fuente, pais, 
-          idioma, seccion, fecha_extraccion
-        FROM noticias_iglesia
-        ${whereClause}
-        ORDER BY fecha_publicacion DESC
-      `;
+      const result = await db.select().from(news)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(desc(news.fechaPublicacion));
 
-      const news = await db.query(query, params);
-      res.json(news);
+      res.json(result);
     } catch (error) {
       console.error('Error in /api/news:', error);
       res.status(500).json({ 
         error: "Error fetching news",
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }
   });
@@ -72,29 +65,24 @@ export function registerRoutes(app: Express): Server {
       const { startDate, endDate } = req.query;
 
       let conditions = [];
-      const params: any[] = [];
 
       if (startDate && endDate) {
-        conditions.push("fecha_publicacion BETWEEN ? AND ?");
-        params.push(startDate, endDate);
+        conditions.push(and(
+          sql`fecha_publicacion >= ${startDate}`,
+          sql`fecha_publicacion <= ${endDate}`
+        ));
       } else if (startDate) {
-        conditions.push("fecha_publicacion = ?");
-        params.push(startDate);
+        conditions.push(sql`fecha_publicacion = ${startDate}`);
       }
 
-      const whereClause = conditions.length > 0 
-        ? `WHERE ${conditions.join(" AND ")}` 
-        : "";
+      const result = await db.select({
+        titulo: news.titulo
+      })
+      .from(news)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(news.fechaPublicacion));
 
-      const query = `
-        SELECT titulo 
-        FROM noticias_iglesia 
-        ${whereClause}
-        ORDER BY fecha_publicacion DESC
-      `;
-
-      const news = await db.query<{ titulo: string }[]>(query, params);
-      const headlines = news.map(n => n.titulo);
+      const headlines = result.map(n => n.titulo);
 
       if (headlines.length === 0) {
         return res.json({ summary: "No hay noticias para resumir en el rango de fechas seleccionado." });
@@ -106,53 +94,83 @@ export function registerRoutes(app: Express): Server {
       console.error('Error in /api/summary:', error);
       res.status(500).json({ 
         error: "Error generating summary",
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }
   });
 
-  // Metadata endpoints with better error handling and type safety
+  // Metadata endpoints
   app.get("/api/sources", async (_req, res) => {
     try {
-      const sources = await db.query<{ fuente: string }[]>(
-        "SELECT DISTINCT fuente FROM noticias_iglesia ORDER BY fuente"
-      );
-      res.json(sources.map(s => s.fuente));
+      const result = await db
+        .select({ fuente: news.fuente })
+        .from(news)
+        .groupBy(news.fuente)
+        .orderBy(news.fuente);
+
+      res.json(result.map(s => s.fuente));
     } catch (error) {
       console.error('Error in /api/sources:', error);
       res.status(500).json({ 
         error: "Error fetching sources",
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }
   });
 
   app.get("/api/sections", async (_req, res) => {
     try {
-      const sections = await db.query<{ seccion: string }[]>(
-        "SELECT DISTINCT seccion FROM noticias_iglesia WHERE seccion IS NOT NULL ORDER BY seccion"
-      );
-      res.json(sections.map(s => s.seccion));
+      const result = await db
+        .select({ seccion: news.seccion })
+        .from(news)
+        .where(sql`seccion IS NOT NULL`)
+        .groupBy(news.seccion)
+        .orderBy(news.seccion);
+
+      res.json(result.map(s => s.seccion));
     } catch (error) {
       console.error('Error in /api/sections:', error);
       res.status(500).json({ 
         error: "Error fetching sections",
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }
   });
 
   app.get("/api/countries", async (_req, res) => {
     try {
-      const countries = await db.query<{ pais: string }[]>(
-        "SELECT DISTINCT pais FROM noticias_iglesia WHERE pais IS NOT NULL ORDER BY pais"
-      );
-      res.json(countries.map(c => c.pais));
+      const result = await db
+        .select({ pais: news.pais })
+        .from(news)
+        .where(sql`pais IS NOT NULL`)
+        .groupBy(news.pais)
+        .orderBy(news.pais);
+
+      res.json(result.map(c => c.pais));
     } catch (error) {
       console.error('Error in /api/countries:', error);
       res.status(500).json({ 
         error: "Error fetching countries",
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      });
+    }
+  });
+
+  app.get("/api/languages", async (_req, res) => {
+    try {
+      const result = await db
+        .select({ idioma: news.idioma })
+        .from(news)
+        .where(sql`idioma IS NOT NULL`)
+        .groupBy(news.idioma)
+        .orderBy(news.idioma);
+
+      res.json(result.map(l => l.idioma));
+    } catch (error) {
+      console.error('Error in /api/languages:', error);
+      res.status(500).json({ 
+        error: "Error fetching languages",
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }
   });
