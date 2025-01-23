@@ -26,26 +26,46 @@ export default function NewsGrid({ news, loading }: Props) {
     );
   }
 
+  // Ordenar noticias por fecha descendente
+  const sortedNews = [...news].sort((a, b) => 
+    new Date(b.fechaPublicacion).getTime() - new Date(a.fechaPublicacion).getTime()
+  );
+
   return (
     <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-      {news.map(item => (
+      {sortedNews.map(item => (
         <div key={item.id} className="col">
           <div className="card h-100 shadow-sm hover-shadow transition-all">
             {item.urlImagen && (
               <div className="card-img-wrapper position-relative" style={{ height: '200px' }}>
-                <img 
-                  src={item.urlImagen} 
-                  className="card-img-top h-100 w-100 object-cover" 
-                  alt={item.titulo}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                  }}
-                />
+                <a 
+                  href={item.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  <img 
+                    src={item.urlImagen} 
+                    className="card-img-top h-100 w-100 object-cover" 
+                    alt={item.titulo}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                </a>
               </div>
             )}
             <div className="card-body">
-              <h5 className="card-title text-primary mb-3">{item.titulo}</h5>
+              <h5 className="card-title text-primary mb-3">
+                <a 
+                  href={item.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-decoration-none"
+                >
+                  {item.titulo}
+                </a>
+              </h5>
               {item.resumen && (
                 <p className="card-text text-muted mb-3" style={{
                   display: '-webkit-box',

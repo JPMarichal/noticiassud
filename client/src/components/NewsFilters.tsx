@@ -66,12 +66,10 @@ export default function NewsFilters({ onFilterChange }: Props) {
           const sectionsData = await fetchSections(filters.source);
           setSections(sectionsData);
           if (sectionsData.length === 0) {
-            // Si la fuente no tiene secciones, limpiamos la selección de sección
-            if (filters.section) {
-              const newFilters = { ...filters, section: '' };
-              setFilters(newFilters);
-              onFilterChange(newFilters);
-            }
+            // Si la fuente no tiene secciones, establecemos la sección por defecto
+            const newFilters = { ...filters, section: '' };
+            setFilters(newFilters);
+            onFilterChange(newFilters);
           }
         } catch (error) {
           console.error('Error loading sections:', error);
