@@ -4,19 +4,19 @@ import OpenAI from "openai";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function generateNewsSummary(headlines: string[]): Promise<string> {
-  const prompt = `Analyze and summarize the following news headlines, grouping them by theme and providing a coherent narrative summary:
+  const prompt = `Analiza y resume los siguientes titulares de noticias, agrupándolos por tema y proporcionando un resumen coherente en español:
 
-Headlines:
+Titulares:
 ${headlines.join('\n')}
 
-Please provide a well-structured summary that:
-1. Groups related news items
-2. Highlights key themes
-3. Provides context where relevant
-4. Maintains a neutral tone
-5. Is easy to read and understand
+Por favor, proporciona un resumen bien estructurado que:
+1. Agrupe noticias relacionadas
+2. Destaque temas principales
+3. Proporcione contexto cuando sea relevante
+4. Mantenga un tono neutral
+5. Sea fácil de leer y entender
 
-Respond in a narrative format.`;
+Responde en formato narrativo en español.`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
@@ -25,5 +25,5 @@ Respond in a narrative format.`;
     max_tokens: 1000
   });
 
-  return response.choices[0].message.content || "Unable to generate summary";
+  return response.choices[0].message.content || "No se pudo generar el resumen";
 }

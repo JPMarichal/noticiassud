@@ -20,9 +20,9 @@ export default function SummaryPage() {
     <div className="container py-4">
       <h1 className="mb-4">
         <i className="fas fa-robot me-2"></i>
-        AI News Summary
+        Resumen de noticias
       </h1>
-      
+
       <NewsFilters onFilterChange={setFilters} />
       <NewsSummary summary={summary} loading={isLoading} />
     </div>

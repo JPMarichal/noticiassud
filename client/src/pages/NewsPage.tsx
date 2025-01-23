@@ -19,9 +19,9 @@ export default function NewsPage() {
     <div className="container py-4">
       <h1 className="mb-4">
         <i className="fas fa-newspaper me-2"></i>
-        Latest News
+        Últimas noticias
       </h1>
-      
+
       <NewsFilters onFilterChange={setFilters} />
       <NewsGrid news={news} loading={isLoading} />
     </div>
