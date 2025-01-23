@@ -35,10 +35,10 @@ export default function NewsGrid({ news, loading }: Props) {
     new Date(b.fechaPublicacion).getTime() - new Date(a.fechaPublicacion).getTime()
   );
 
-  const handleShare = (url: string, type: string, newsId: number) => {
+  const handleShare = (item: News, type: string) => {
     let shareUrl = '';
-    const encodedUrl = encodeURIComponent(url);
-    const encodedTitle = encodeURIComponent('¡Mira esta noticia interesante!');
+    const encodedUrl = encodeURIComponent(item.url);
+    const encodedTitle = encodeURIComponent(item.titulo);
 
     switch (type) {
       case 'facebook':
@@ -48,14 +48,20 @@ export default function NewsGrid({ news, loading }: Props) {
         shareUrl = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`;
         break;
       case 'whatsapp':
-        shareUrl = `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`;
+        shareUrl = `https://api.whatsapp.com/send?text=${encodedTitle}%0A%0A${encodedUrl}`;
         break;
       case 'email':
-        shareUrl = `mailto:?subject=${encodedTitle}&body=${encodedUrl}`;
+        shareUrl = `mailto:?subject=${encodedTitle}&body=${item.resumen ? encodedTitle + '%0A%0A' + encodeURIComponent(item.resumen) + '%0A%0A' + encodedUrl : encodedTitle + '%0A%0A' + encodedUrl}`;
         break;
       case 'copy':
-        navigator.clipboard.writeText(url).then(() => {
-          setCopyFeedback(newsId);
+        const copyText = [
+          item.titulo,
+          item.resumen,
+          item.url
+        ].filter(Boolean).join('\n\n');
+
+        navigator.clipboard.writeText(copyText).then(() => {
+          setCopyFeedback(item.id);
           setTimeout(() => setCopyFeedback(null), 2000);
         });
         return;
@@ -139,35 +145,35 @@ export default function NewsGrid({ news, loading }: Props) {
                 <div className="btn-group">
                   <button 
                     className="btn btn-sm btn-outline-secondary"
-                    onClick={() => handleShare(item.url, 'facebook', item.id)}
+                    onClick={() => handleShare(item, 'facebook')}
                     title="Compartir en Facebook"
                   >
                     <i className="fab fa-facebook"></i>
                   </button>
                   <button 
                     className="btn btn-sm btn-outline-secondary"
-                    onClick={() => handleShare(item.url, 'twitter', item.id)}
+                    onClick={() => handleShare(item, 'twitter')}
                     title="Compartir en Twitter"
                   >
                     <i className="fab fa-twitter"></i>
                   </button>
                   <button 
                     className="btn btn-sm btn-outline-secondary"
-                    onClick={() => handleShare(item.url, 'whatsapp', item.id)}
+                    onClick={() => handleShare(item, 'whatsapp')}
                     title="Compartir en WhatsApp"
                   >
                     <i className="fab fa-whatsapp"></i>
                   </button>
                   <button 
                     className="btn btn-sm btn-outline-secondary"
-                    onClick={() => handleShare(item.url, 'email', item.id)}
+                    onClick={() => handleShare(item, 'email')}
                     title="Compartir por correo"
                   >
                     <i className="fas fa-envelope"></i>
                   </button>
                   <button 
                     className="btn btn-sm btn-outline-secondary"
-                    onClick={() => handleShare(item.url, 'copy', item.id)}
+                    onClick={() => handleShare(item, 'copy')}
                     title="Copiar enlace"
                   >
                     {copyFeedback === item.id ? (
