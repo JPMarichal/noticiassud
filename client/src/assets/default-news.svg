@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="400" version="1.1" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+ <rect width="800" height="400" fill="#f5f5f5"/>
+ <g transform="matrix(1.3333 0 0 -1.3333 400 200)">
+  <path d="m-150 0c0-82.843 67.157-150 150-150s150 67.157 150 150-67.157 150-150 150-150-67.157-150-150z" fill="#e0e0e0"/>
+  <path d="m-50-50h100v100h-100z" fill="#cccccc"/>
+  <path d="m-30-30h60v60h-60z" fill="#b0b0b0"/>
+  <text transform="scale(1,-1)" x="-120" y="-70" fill="#666666" font-family="Arial" font-size="24px">
+    Imagen no disponible
+  </text>
+ </g>
+</svg>

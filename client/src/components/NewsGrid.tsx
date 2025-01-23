@@ -1,4 +1,5 @@
 import { News } from '../lib/types';
+import defaultNewsImage from '../assets/default-news.svg';
 
 interface Props {
   news: News[];
@@ -36,25 +37,23 @@ export default function NewsGrid({ news, loading }: Props) {
       {sortedNews.map(item => (
         <div key={item.id} className="col">
           <div className="card h-100 shadow-sm hover-shadow transition-all">
-            {item.urlImagen && (
-              <div className="card-img-wrapper position-relative" style={{ height: '200px' }}>
-                <a 
-                  href={item.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
-                  <img 
-                    src={item.urlImagen} 
-                    className="card-img-top h-100 w-100 object-cover" 
-                    alt={item.titulo}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                </a>
-              </div>
-            )}
+            <div className="card-img-wrapper position-relative" style={{ height: '200px' }}>
+              <a 
+                href={item.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <img 
+                  src={item.urlImagen || defaultNewsImage} 
+                  className="card-img-top h-100 w-100 object-cover" 
+                  alt={item.titulo}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = defaultNewsImage;
+                  }}
+                />
+              </a>
+            </div>
             <div className="card-body">
               <h5 className="card-title text-primary mb-3">
                 <a 
