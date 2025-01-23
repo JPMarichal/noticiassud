@@ -14,7 +14,10 @@ export default function NewsFilters({ onFilterChange }: Props) {
   const [filters, setFilters] = useState<FilterParams>({
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0],
-    language: 'Español'
+    language: 'español',  // Valor por defecto
+    source: '',  // "Todas las Fuentes"
+    section: '', // "Todas las Secciones"
+    country: ''  // "Todos los Países"
   });
 
   // Load languages and countries on mount
@@ -62,11 +65,24 @@ export default function NewsFilters({ onFilterChange }: Props) {
         try {
           const sectionsData = await fetchSections(filters.source);
           setSections(sectionsData);
+          if (sectionsData.length === 0) {
+            // Si la fuente no tiene secciones, limpiamos la selección de sección
+            if (filters.section) {
+              const newFilters = { ...filters, section: '' };
+              setFilters(newFilters);
+              onFilterChange(newFilters);
+            }
+          }
         } catch (error) {
           console.error('Error loading sections:', error);
         }
       } else {
         setSections([]);
+        if (filters.section) {
+          const newFilters = { ...filters, section: '' };
+          setFilters(newFilters);
+          onFilterChange(newFilters);
+        }
       }
     };
     loadSections();
@@ -227,7 +243,7 @@ export default function NewsFilters({ onFilterChange }: Props) {
               className="form-select form-select-sm"
               value={filters.section}
               onChange={(e) => handleFilterChange('section', e.target.value)}
-              disabled={!filters.source}
+              disabled={!filters.source || sections.length === 0}
             >
               <option value="">Todas las Secciones</option>
               {sections.map(section => (
